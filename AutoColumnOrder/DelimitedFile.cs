@@ -11,104 +11,76 @@ namespace AutoColumnOrder
     class DelimitedFile
     {
         #region Constructors
-        public DelimitedFile(string path)
+        //optionally specify the delimiters to use
+        public DelimitedFile(string path, char recordDelimiter = '\n', char fieldDelimiter = (char)20, char multiValueDelimiter = (char)59, char quote = (char)254)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("Null or empty path.");
             if (!File.Exists(path)) throw new ArgumentException(string.Format("File {0} does not exist.", path));
-
             _str = new StreamReader(path);
 
-            string line = _str.ReadLine();
-            if (string.IsNullOrEmpty(line)) throw new ApplicationException(string.Format("Empty first line in {0}.", path));
-            CurrentLine = line;
+            if (recordDelimiter == null) throw new ArgumentNullException("Null record delimiter.");
+            if (fieldDelimiter == null) throw new ArgumentNullException("Null field delimiter.");
+            if (multiValueDelimiter == null) throw new ArgumentNullException("Null multi-value delimiter.");
+            if (quote == null) throw new ArgumentNullException("Null quote");
+
+            RecordDelimiter = recordDelimiter;
+            FieldDelimiter = fieldDelimiter;
+            MultiValueDelimiter = multiValueDelimiter;
+            Quote = quote;
+
+            GetNextRecord();
+            HeaderRecord = CurrentRecord;
         }
 
 
         #endregion
 
-        #region Fields
-        private char _RecordDelimiter = '\n';
-        private char _FieldDelimiter = (char)20;
-        private char _MultiValueDelimiter = (char)59;
-        private char _Quote = (char)254;
-
-        #endregion
 
         #region Properties
-        public char RecordDelimiter
-        {
-            get
-            {
-                return _RecordDelimiter;
-            }
-            private set
-            {
-                _RecordDelimiter = value;
-            }
-        }
+        public char RecordDelimiter { get; private set; }
 
-        public char FieldDelimiter
-        {
-            get
-            {
-                return _FieldDelimiter;
-            }
-            private set
-            {
-                _FieldDelimiter = value;
-            }
-        }
-        
-        public char MultiValueDelimiter
-        {
-            get
-            {
-                return _MultiValueDelimiter;
-            }
-            private set
-            {
-                _MultiValueDelimiter = value;
-            }
-        }
+        public char FieldDelimiter { get; private set; }
 
-        public char Quote
-        {
-            get
-            {
-                return _Quote;
-            }
-            private set
-            {
-                _Quote = value;
-            }
-        }
+        public char MultiValueDelimiter { get; private set; }
+
+        public char Quote { get; private set; }
+
+        public bool EndOfFile { get; private set; }
 
         private StreamReader _str { get; set; }
 
-        public string CurrentLine { get; private set; }
+        public IEnumerable<string> CurrentRecord { get; private set; }
 
-        public string[] CurrentRecord { get; private set; }
-
-
+        public IEnumerable<string> HeaderRecord { get; private set; }
 
         #endregion
 
-        //GetNextRecord
-
         //GetFieldFromRecord
 
-        //ParseLine
-        //Separates a line into fields and strips out quotes
-        private IEnumerable<string> ParseLine(string line)
+        public void GetNextRecord()
         {
-            if (string.IsNullOrEmpty(line)) throw new ApplicationException(string.Format("String {0} is null or empty.", line));
+            string line = _str.ReadLine();
+            if (_str.EndOfStream)
+            {
+                EndOfFile = true;
+                return;
+            }
 
-            char[] delimiter = { _FieldDelimiter };
-            string[] record = line.Split(delimiter);
+            if (string.IsNullOrEmpty(line)) throw new ApplicationException("Empty line.");
+
+            char[] delimiter = { FieldDelimiter };
+            IEnumerable<string> record = line.Split(delimiter).AsEnumerable<string>();
 
             if (record == null) throw new ApplicationException(string.Format("No fields found in {0}", line));
-            
-            //TODO: write a lambda that will strip the quotes
+
+            string q = Quote.ToString();
+
+            foreach (var s in record)
+            {
+                s.Replace(q, "");
+            }
+
+            CurrentRecord = record;
         }
     }
 }
