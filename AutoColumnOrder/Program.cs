@@ -8,13 +8,42 @@ namespace AutoColumnOrder
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            var df = new DelimitedFile("C:\\temp\\data.dat");
-            while (!df.EndOfFile)
+
+            if (args.Length < 3)
             {
-                df.GetNextRecord();
+                Console.WriteLine("You must enter at least a path, an encoding, and one column name.");
+                return 1;
             }
+
+            var path = args[0];
+            var encoding = args[1];
+            var columns = args.AsEnumerable().Skip(2);
+
+            try
+            {
+                var df = new DelimitedFile(path, encoding);
+                while (!df.EndOfFile)
+                {
+                    df.GetNextRecord();
+                    foreach (var c in columns)
+                    {
+                        Console.Write(df.GetFieldByName(c));
+                        Console.Write("\t");
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.Read();
+            }
+
+            Console.Read();
+            return 0;
         }
     }
 }

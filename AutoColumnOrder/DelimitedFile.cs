@@ -13,11 +13,14 @@ namespace AutoColumnOrder
     {
         #region Constructors
         //optionally specify the delimiters to use
-        public DelimitedFile(string path, char recordDelimiter = '\n', char fieldDelimiter = (char)20, char multiValueDelimiter = (char)59, char quote = (char)254)
+        public DelimitedFile(string path, string encoding, char recordDelimiter = '\n', char fieldDelimiter = (char)20, char multiValueDelimiter = (char)59, char quote = (char)254)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentException("Null or empty path.", path);
             if (!File.Exists(path)) throw new ArgumentException(string.Format("File {0} does not exist.", path));
-            _str = new StreamReader(path, Encoding.Default);
+
+            var encodingObj = ValidateEncodingString(encoding);
+
+            _str = new StreamReader(path, encodingObj);
 
             RecordDelimiter = recordDelimiter;
             FieldDelimiter = fieldDelimiter;
@@ -60,7 +63,17 @@ namespace AutoColumnOrder
             return CurrentRecord.ElementAt(position);
         }
 
-
+        //Get a particular field from the record by its name from the header row
+        public string GetFieldByName(string name)
+        {
+            //do a case-insensitive matching
+            var lName = name.ToLower(CultureInfo.InvariantCulture);
+            
+            var index = HeaderRecord.ToList().FindIndex(s => s.ToLower(CultureInfo.InvariantCulture).Equals(lName));
+            if (index < 0) throw new ApplicationException(string.Format("\"{0}\" is not a valid column name.", name));
+            return GetFieldByPosition(index);
+        }
+        
         //Get the next record in the file
         public void GetNextRecord()
         {
@@ -86,6 +99,25 @@ namespace AutoColumnOrder
             nakedRecordList.AddRange(currentRecord.Select(s => s.Replace(q, "")));
 
             CurrentRecord = nakedRecordList;
+        }
+
+        //Validate encoding string argument and return an Encoding object
+        private Encoding ValidateEncodingString(string encoding)
+        {
+            //make the string case insensitive
+            var lEncoding = encoding.ToLower(CultureInfo.InvariantCulture);
+            
+            EncodingInfo encodingInfo = null;
+            try
+            {
+                encodingInfo = Encoding.GetEncodings().Single(e => e.Name.Contains(lEncoding));
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new InvalidOperationException(string.Format("{0} is not a valid encoding", encoding));
+            }
+
+            return Encoding.GetEncoding(encodingInfo.Name);
         }
     }
 }

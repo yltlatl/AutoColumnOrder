@@ -5,3 +5,8 @@ C:\Users\AaronGardner\Documents\Visual Studio 2013\Projects\AutoColumnOrder\Auto
 C:\Users\AaronGardner\Documents\Visual Studio 2013\Projects\AutoColumnOrder\AutoColumnOrder\bin\Debug\AutoColumnOrder.pdb
 C:\Users\AaronGardner\Documents\Visual Studio 2013\Projects\AutoColumnOrder\AutoColumnOrder\obj\Debug\AutoColumnOrder.exe
 C:\Users\AaronGardner\Documents\Visual Studio 2013\Projects\AutoColumnOrder\AutoColumnOrder\obj\Debug\AutoColumnOrder.pdb
+C:\Users\AaronGardner\Documents\Visual Studio 2012\Projects\AutoColumnOrder\AutoColumnOrder\bin\Debug\AutoColumnOrder.exe
+C:\Users\AaronGardner\Documents\Visual Studio 2012\Projects\AutoColumnOrder\AutoColumnOrder\bin\Debug\AutoColumnOrder.pdb
+C:\Users\AaronGardner\Documents\Visual Studio 2012\Projects\AutoColumnOrder\AutoColumnOrder\obj\Debug\AutoColumnOrder.csprojResolveAssemblyReference.cache
+C:\Users\AaronGardner\Documents\Visual Studio 2012\Projects\AutoColumnOrder\AutoColumnOrder\obj\Debug\AutoColumnOrder.exe
+C:\Users\AaronGardner\Documents\Visual Studio 2012\Projects\AutoColumnOrder\AutoColumnOrder\obj\Debug\AutoColumnOrder.pdb
