@@ -10,6 +10,11 @@ namespace AutoColumnOrder
     {
         static void Main(string[] args)
         {
+            var df = new DelimitedFile("C:\\temp\\data.dat");
+            while (!df.EndOfFile)
+            {
+                df.GetNextRecord();
+            }
         }
     }
 }

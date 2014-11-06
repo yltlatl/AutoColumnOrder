@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,14 +15,9 @@ namespace AutoColumnOrder
         //optionally specify the delimiters to use
         public DelimitedFile(string path, char recordDelimiter = '\n', char fieldDelimiter = (char)20, char multiValueDelimiter = (char)59, char quote = (char)254)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("Null or empty path.");
+            if (string.IsNullOrEmpty(path)) throw new ArgumentException("Null or empty path.", path);
             if (!File.Exists(path)) throw new ArgumentException(string.Format("File {0} does not exist.", path));
-            _str = new StreamReader(path);
-
-            if (recordDelimiter == null) throw new ArgumentNullException("Null record delimiter.");
-            if (fieldDelimiter == null) throw new ArgumentNullException("Null field delimiter.");
-            if (multiValueDelimiter == null) throw new ArgumentNullException("Null multi-value delimiter.");
-            if (quote == null) throw new ArgumentNullException("Null quote");
+            _str = new StreamReader(path, Encoding.Default);
 
             RecordDelimiter = recordDelimiter;
             FieldDelimiter = fieldDelimiter;
@@ -55,11 +51,20 @@ namespace AutoColumnOrder
 
         #endregion
 
-        //GetFieldFromRecord
+        //Get a particular field from the record by its zero-indexed position
+        public string GetFieldByPosition(int position)
+        {
+            if (position < 0 || position >= HeaderRecord.Count())
+                throw new ArgumentOutOfRangeException(position.ToString(CultureInfo.InvariantCulture), "Position is out of range.");
 
+            return CurrentRecord.ElementAt(position);
+        }
+
+
+        //Get the next record in the file
         public void GetNextRecord()
         {
-            string line = _str.ReadLine();
+            var line = _str.ReadLine();
             if (_str.EndOfStream)
             {
                 EndOfFile = true;
@@ -69,18 +74,18 @@ namespace AutoColumnOrder
             if (string.IsNullOrEmpty(line)) throw new ApplicationException("Empty line.");
 
             char[] delimiter = { FieldDelimiter };
-            IEnumerable<string> record = line.Split(delimiter).AsEnumerable<string>();
+            var record = line.Split(delimiter).AsEnumerable();
 
             if (record == null) throw new ApplicationException(string.Format("No fields found in {0}", line));
 
-            string q = Quote.ToString();
+            List<string> nakedRecordList = new List<string>();
 
-            foreach (var s in record)
-            {
-                s.Replace(q, "");
-            }
+            var q = Quote.ToString(CultureInfo.InvariantCulture);
 
-            CurrentRecord = record;
+            var currentRecord = record as IList<string> ?? record.ToList();
+            nakedRecordList.AddRange(currentRecord.Select(s => s.Replace(q, "")));
+
+            CurrentRecord = nakedRecordList;
         }
     }
 }
